@@ -40,12 +40,17 @@
 ##	* interval is in sec * cleanup * reset timer on new hilight * Possible to set subject in settings * Possible to turn of status prints
 ## 0.4 (http://pastebin.com/DKQ6GxKb)
 ##	* autoaway is integrated with mods (Use own settings if use)
-##  * screen_away is integrated with mods (use own settings if use)
+## 	* screen_away is integrated with mods (use own settings if use)
 ##	* if connected to irssi-proxy we wont be away or send mail. edit ircnet to fit you on line 556 and 572 * reset timer is optional * possible to be away without /away * The tings i forgot.
 ## 0.5
-##	* Autoaway reason * bugfix with _ircaway
+##	* Autoaway reason 
+##	* bugfix with _ircaway
 ##
 #### TODO:
-## - Context( X lines before and after hilight) if possible. - more cleanup - Printformats for print with theme. - Set auto-away reason - better print handling(se also above)
+## - Context( X lines before and after hilight) if possible. 
+## - more cleanup
+## - Printformats for print with theme.
+## - Set auto-away reason
+## - better print handling(se also above)
 ##
 #################################################################################################################
