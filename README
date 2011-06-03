@@ -1,0 +1,51 @@
+#!/usr/bin/perl
+################################################################################################################
+## mailhilight.pl by NChief
+##
+## This is a script for sending you email if you get hilighted or get a private message. It wil only trigger if you are away. (/away <reason>) It wil gather all hilights/msg and if no hilight/msg 
+## within specified interval(default 60sec), mail is sent.
+##
+## Script requires sendmail and perl module Mail::Sendmail (`cpan Mail::Sendmail`)
+##
+#### Settings explained:
+## - /set mailhilight_hiligon YourNick
+##		This sets what to trigger on. its a list of triggers sepreated with space It wil on trigger if its surrounded by non word characters (A-z_)
+## - /set mailhilight_to you@email.com
+##		Set wich email to send your hilights to.
+## - /set mailhilight_from from@email.com
+##		Set the from-mail
+## - /set mailhilight_intervall 60
+##		This sets the time in sec from your highlight to recive it to stop gather hililights and send them.
+## - /set mailhilight_subject New hilights/messages
+##		Sets the subject the mail i sent with
+## - /set mailhilight_print ON
+##		Do you want to print messages like "Hilights sent du mail" in status?
+## - /set mailhilight_timerreset ON
+##		Do you want the timer to reset on new hilight?
+## - /set mailhilight_ircaway ON
+##		Use /away (ON) or depend on autoaway/screen away (OFF)?
+## - /set mailhilight_autoawayreason Im away
+##		Set away reason given on autoaway.
+##
+#### Commands:
+## - /send_hilights
+##		discard timer and send hiligts that are ready to send.
+##
+#### Changelog:
+## 0.1 (http://pastebin.com/mFSUcFxS)
+##	* Initial release.
+## 0.2 (http://pastebin.com/eCKqtWeZ)
+##	* Code-cleanup * More documentation * Use $var insted of file * Everything i forgot
+## 0.3 (http://pastebin.com/ys6XpDa7)
+##	* interval is in sec * cleanup * reset timer on new hilight * Possible to set subject in settings * Possible to turn of status prints
+## 0.4 (http://pastebin.com/DKQ6GxKb)
+##	* autoaway is integrated with mods (Use own settings if use)
+##  * screen_away is integrated with mods (use own settings if use)
+##	* if connected to irssi-proxy we wont be away or send mail. edit ircnet to fit you on line 556 and 572 * reset timer is optional * possible to be away without /away * The tings i forgot.
+## 0.5
+##	* Autoaway reason * bugfix with _ircaway
+##
+#### TODO:
+## - Context( X lines before and after hilight) if possible. - more cleanup - Printformats for print with theme. - Set auto-away reason - better print handling(se also above)
+##
+################################################################################################################
