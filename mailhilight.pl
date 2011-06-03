@@ -284,6 +284,10 @@ sub auto_timeout {
 }
 
 sub reset_timer {
+	my $cmd = shift;
+	if ($cmd =~ /(voice|knockout)/i) {
+		return;
+	}
    if ($autoaway_state eq 1) {
      $autoaway_state = 3;
      #foreach my $server (Irssi::servers()) {
