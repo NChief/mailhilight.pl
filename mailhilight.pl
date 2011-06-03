@@ -294,7 +294,7 @@ sub reset_timer {
      $autoaway_state = 0;
    } 
   if ($autoaway_state eq 0) {
-	$message = undef;
+	$messages = undef;
     if (defined($autoaway_to_tag)) {
       Irssi::timeout_remove($autoaway_to_tag);
       $autoaway_to_tag = undef();
