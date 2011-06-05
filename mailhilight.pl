@@ -81,7 +81,7 @@ use utf8;
 use vars qw($VERSION %IRSSI);
 
 # IRSSI
-$VERSION = "0.4";
+$VERSION = "0.6";
 %IRSSI = (
         authours => 'NChief',
         contact => 'NChief @ EFNet',
@@ -109,6 +109,7 @@ my $ircaway = settings_get_bool('mailhilight_ircaway');
 my $timebuffer = undef; # used for timers
 my $messages = undef; # Message sent to mail
 my $is_away = 0;
+#my $collect = 0;
 
 sub start_timer {
         if ($timebuffer && settings_get_bool('mailhilight_timerreset')) { # reset timer.
@@ -116,23 +117,31 @@ sub start_timer {
                 $timebuffer = undef;
         }
         unless(defined($timebuffer)) { # If no timer set
-                $timebuffer = Irssi::timeout_add_once(settings_get_int('mailhilight_interval') * 1000, 'send_hilights', undef);
+			#$collect = 1;
+            $timebuffer = Irssi::timeout_add_once(settings_get_int('mailhilight_interval') * 1000, 'send_hilights', undef);
         }
 }
 
 # On public message
 sub event_public_message {
         my ($server, $msg, $nick, $address, $target) = @_;
+		my $hit = 0;
         foreach (@hilights) {
                 if ($msg =~ /(\W|^)$_(\W|$)/i) {
                         my $time = strftime(Irssi::settings_get_str('timestamp_format')." ", localtime);
-                        $messages .= $time.$target." <".$nick."> ".$msg."\n";
+                        #$messages .= $time.$target." <".$nick."> ".$msg."\n";
+						$messages->{$target} = $time.'&lt;'.$nick.'&gt; '.$msg.'<br />';
+						$hit = 1;
 						if ($is_away) {
 							start_timer();
 							print "Hilight saved" if (settings_get_bool('mailhilight_print'));
 						}
                 }
         }
+		if(defined($messages->{$target}) && !$hit) {
+			my $time = strftime(Irssi::settings_get_str('timestamp_format')." ", localtime);
+			$messages->{$target} .= $time.'&lt;'.$nick.'&gt; '.$msg.'<br />';
+		}
 }
 
 sub event_privmsg { # If Private message
@@ -140,17 +149,32 @@ sub event_privmsg { # If Private message
         my ($target, $text) = split(/ :/, $data, 2);
         if ($target eq $server->{nick}) {
                 my $time = strftime(Irssi::settings_get_str('timestamp_format')." ", localtime);
-                $messages .= $time."<".$nick."> ".$text."\n";
+                #$messages .= $time."<".$nick."> ".$text."\n";
 				if ($is_away) {
 					start_timer();
 					print "MSG saved" if (settings_get_bool('mailhilight_print'));
 				}
+				$messages->{$target} .= $time.'&lt;'.$nick.'&gt; '.$text.'<br />';
         }
 }
 
 sub send_hilights {
         if(defined($messages)) { # If we got a message to send.
-                my %mail = ( To => $mailto, From => $mailfrom, 'Content-Type' => 'text/plain; charset="UTF-8"', Subject => $subject, Message => $messages );
+				my $content = "";
+				foreach my $channel (keys %{$messages}) {
+					if ($channel =~ /^#/) { #is channel
+						$content .= "Hilight in ".$channel.":<br />";
+						$content .= $messages->{$channel};
+					} else { #msg
+						$content .= "MSG from ".$channel.":<br />";
+						$content .= $messages->{$channel};
+					}
+					$content .= "\n";
+				}
+				foreach (@hilights) {
+					$content =~ s/($_)/<b>$1<\/b>/gi;
+				}
+                my %mail = ( To => $mailto, From => $mailfrom, 'Content-Type' => 'text/html; charset="UTF-8"', Subject => $subject, Message => $content );
                 sendmail(%mail) or die($Mail::Sendmail::error);
                 print "Hilights sent to ".$mailto if (settings_get_bool('mailhilight_print'));
                 $timebuffer = undef;
