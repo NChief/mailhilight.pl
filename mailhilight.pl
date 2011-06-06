@@ -113,6 +113,7 @@ my $timebuffer = undef; # used for timers
 my $messages = undef; # Message sent to mail
 my $is_away = 0;
 my $autolog_path = settings_get_str('autolog_path');
+my $autolog = settings_get_bool('autolog');
 #my $collect = 0;
 
 sub start_timer {
@@ -134,7 +135,7 @@ sub event_public_message {
                 if ($msg =~ /(\W|^)$_(\W|$)/i) {
                         my $time = strftime(Irssi::settings_get_str('timestamp_format')." ", localtime);
                         #$messages .= $time.$target." <".$nick."> ".$msg."\n";
-						unless (defined($messages->{$target})) {
+						unless (defined($messages->{$target}) && !$autolog) {
 							my $logpath = $autolog_path;
 							my $tag = $server->{'tag'};
 							my $channel = lc($target);
