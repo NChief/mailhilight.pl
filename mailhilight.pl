@@ -144,11 +144,17 @@ sub event_public_message {
 							$logpath =~ s/~/$ENV{'HOME'}/;
 							if ((-e $logpath) && (-r $logpath)) {
 								my $bw = File::ReadBackwards->new( $logpath ) or die($!);
-								my $c = 0;
-								while (defined( my $log_line = $bw->readline ) && ($c < 5)) {
-									$log_line =~ s/\n/<br \/>/;
-									$messages->{$target} .= $log_line;
-									$c++;
+								my $count = 0;
+								my $temp = "";
+								while (defined( my $log_line = $bw->readline ) && ($count < 5)) {
+									#$log_line =~ s/\n/<br \/>/;
+									#$messages->{$target} .= $log_line;
+									$temp .= $log_line;
+									$count++;
+								}
+								my @temp2 = reverse(split(/\n/, $temp));
+								foreach (@temp2) {
+									$messages->{$target} .= $_."<br />";
 								}
 							}
 						}
@@ -176,7 +182,7 @@ sub event_privmsg { # If Private message
 					start_timer();
 					print "MSG saved" if (settings_get_bool('mailhilight_print'));
 				}
-				$messages->{$target} .= $time.'&lt;'.$nick.'&gt; '.$text.'<br />';
+				$messages->{$nick} .= $time.'&lt;'.$nick.'&gt; '.$text.'<br />';
         }
 }
 
