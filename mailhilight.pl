@@ -6,7 +6,7 @@
 ## It wil only trigger if you are away. (/away <reason>)
 ## It wil gather all hilights/msg and if no hilight/msg within specified interval(default 60sec), mail is sent.
 ##
-## Script requires sendmail and perl module Mail::Sendmail (`cpan Mail::Sendmail`)
+## Script requires sendmail and perl modules Mail::Sendmail and File::ReadBackwards (`cpan Mail::Sendmail File::ReadBackwards`)
 ##
 #### Settings explained:
 ## - /set mailhilight_hiligon YourNick
@@ -57,12 +57,14 @@
 ## 0.5
 ##	* Autoaway reason
 ##	* bugfix with _ircaway
+## 0.6
+##	* Context!
+##	* Probably more.
 ##
 #### TODO:
 ## - Context( X lines before and after hilight) if possible.
 ## - more cleanup
 ## - Printformats for print with theme.
-## - Set auto-away reason
 ## - better print handling(se also above)
 ##
 ################################################################################################################
@@ -75,6 +77,7 @@ use Irssi qw(settings_add_str settings_get_str print settings_add_int settings_g
 use Irssi::Irc;
 # Sendmail for sending mail
 use Mail::Sendmail;
+use File::ReadBackwards;
 
 use POSIX;
 use utf8;
@@ -109,6 +112,7 @@ my $ircaway = settings_get_bool('mailhilight_ircaway');
 my $timebuffer = undef; # used for timers
 my $messages = undef; # Message sent to mail
 my $is_away = 0;
+my $autolog_path = settings_get_str('autolog_path');
 #my $collect = 0;
 
 sub start_timer {
@@ -130,12 +134,29 @@ sub event_public_message {
                 if ($msg =~ /(\W|^)$_(\W|$)/i) {
                         my $time = strftime(Irssi::settings_get_str('timestamp_format')." ", localtime);
                         #$messages .= $time.$target." <".$nick."> ".$msg."\n";
-						$messages->{$target} = $time.'&lt;'.$nick.'&gt; '.$msg.'<br />';
+						unless (defined($messages->{$target})) {
+							my $logpath = $autolog_path;
+							my $tag = $server->{'tag'};
+							my $channel = lc($target);
+							$logpath =~ s/\$tag/$tag/;
+							$logpath =~ s/\$0/$channel/;
+							$logpath =~ s/~/$ENV{'HOME'}/;
+							if ((-e $logpath) && (-r $logpath)) {
+								my $bw = File::ReadBackwards->new( $logpath ) or die($!);
+								my $c = 0;
+								while (defined( my $log_line = $bw->readline ) && ($c < 5)) {
+									$log_line =~ s/\n/<br \/>/;
+									$messages->{$target} .= $log_line;
+									$c++;
+								}
+							}
+						}
 						$hit = 1;
-						if ($is_away) {
+						if ($is_away) {	
 							start_timer();
 							print "Hilight saved" if (settings_get_bool('mailhilight_print'));
 						}
+						$messages->{$target} .= $time.'&lt;'.$nick.'&gt; '.$msg.'<br />';
                 }
         }
 		if(defined($messages->{$target}) && !$hit) {
